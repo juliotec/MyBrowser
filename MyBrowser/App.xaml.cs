@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.IO;
 using CefSharp;
 using CefSharp.Wpf;
 
@@ -14,22 +15,33 @@ namespace MyBrowser
     {
         #region Propiedades
 
-        public static string[] DesktopUserAgents
+        public static string[] UserAgents
         {
             get
             {
-                if (_desktopUserAgents == null)
+                if (_userAgents == null)
                 {
-                    _desktopUserAgents = new string[]
-                    {
-                        @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36",
-                    };
+                    _userAgents = File.ReadAllLines("UserAgents.txt");
                 }
 
-                return _desktopUserAgents;
+                return _userAgents;
             }
         }
-        private static string[] _desktopUserAgents;
+        private static string[] _userAgents;
+
+        public static string UserAgentRandom
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_userAgentRandom))
+                {
+                    _userAgentRandom = UserAgents[Random.Next(0, UserAgents.Length)];
+                }
+
+                return _userAgentRandom;
+            }
+        }
+        private static string _userAgentRandom;
 
         public static Random Random
         {
@@ -56,10 +68,8 @@ namespace MyBrowser
             {
                 try
                 {
-                    if (!process.HasExited)
-                    {
-                        process.Kill();
-                    }
+                    process.Kill(true);
+                    process.WaitForExit();
                 }
                 catch
                 {
@@ -89,21 +99,21 @@ namespace MyBrowser
 
             var cefsettings = new CefSettings
             {
-                UserAgent = DesktopUserAgents[Random.Next(0, DesktopUserAgents.Length)]
+                UserAgent = UserAgents[Random.Next(0, UserAgents.Length)]
             };
 
-            _ = Cef.Initialize(cefsettings);
+            Cef.Initialize(cefsettings);
             base.OnStartup(e);
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            base.OnExit(e);
-
             if (Cef.IsInitialized)
             {
                 Cef.Shutdown();
             }
+
+            base.OnExit(e);
         }
 
 

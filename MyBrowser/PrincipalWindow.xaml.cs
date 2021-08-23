@@ -1,46 +1,36 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Input;
 using CefSharp;
-using CefSharp.Wpf;
 
 namespace MyBrowser
 {
     public partial class PrincipalWindow : Window
     {
-        #region Campos
-
-        private ChromiumWebBrowser _browser;
-
-        #endregion
         #region Constructores
 
         public PrincipalWindow()
         {
             InitializeComponent();
-            IniciarBrowser();
         }
 
         #endregion
         #region Metodos
 
-        private void IniciarBrowser()
-        {
-            _browser = new ChromiumWebBrowser()
-            {
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch,
-                HorizontalContentAlignment = HorizontalAlignment.Stretch
-            };
-            _window.Content = _browser;
-        }
-
         private void Limpiar()
         {
-            if (_browser != null && !_browser.IsDisposed)
+            if (_browserChromiumWebBrowser != null && !_browserChromiumWebBrowser.IsDisposed)
             {
-                _browser.Stop();
-                _browser.Dispose();
+                _browserChromiumWebBrowser.Stop();
+                _browserChromiumWebBrowser.Dispose();
+            }
+        }
+
+        private void Navigate()
+        {
+            if (Uri.TryCreate(_urlTextBox.Text, UriKind.Absolute, out var uri))
+            {
+                _browserChromiumWebBrowser.Load(uri.AbsoluteUri);
             }
         }
 
@@ -49,6 +39,20 @@ namespace MyBrowser
             Limpiar();
         }
 
+        private void BuscarButtonClick(object sender, RoutedEventArgs e)
+        {
+            Navigate();
+        }
+
+        private void UrlTextBoxKeyUp(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Enter:
+                    Navigate();
+                    break;
+            }
+        }
 
         #endregion
     }
